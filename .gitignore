@@ -1,0 +1,27 @@
+# OSX
+#
+.DS_Store
+
+# JetBrains
+#
+build/
+.idea
+*.iml
+
+# node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+#Visual Studio Code
+.vscode
+
+# Eslint
+.eslintrc
+
+#dev config
+config/env/development.env.js
+.eslintrc.json
+package-lock.json
+dist/
+server/

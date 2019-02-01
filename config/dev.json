@@ -1,0 +1,10 @@
+{
+  "dev": {
+    "host":"localhost",
+    "user":"postgres",
+    "password":"",
+    "database":"",
+    "driver":"pg",
+    "sql-file": true
+  }
+}
