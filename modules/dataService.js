@@ -18,6 +18,14 @@ class DataService {
 			values: [],
 		})
 	}
+
+	getLast() {
+		return db.one({
+			name: 'get-last',
+			text: `select timestamp from data order by timestamp desc limit 1`,
+			values: [],
+		})
+	}
 }
 
 exports.default = new DataService();

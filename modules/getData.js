@@ -6,11 +6,19 @@ const keyFile = path.resolve(__dirname, 'certificates/client-17-A7B64D415BD3E98B
 const request = require('request-promise');
 const Handlers = require('../api/responses/handlers').default;
 const DataService = require('./dataService').default;
-
+const cron = require('node-cron');
 
 class GetData {
 
-	async getData(req, res) {
+	constructor() {
+		cron.schedule('15 * * * * *', () => {
+			let promise = this.cronGetData();
+			console.log("cron rodando")
+		})
+	}
+
+	async cronGetData() {
+		const time = await DataService.getLast();
 		const options = {
 			method: 'POST',
 			uri: 'https://iot.ufsc.br/api/get.php',
@@ -27,7 +35,7 @@ class GetData {
 					y       : 305,
 					z       : 0,
 					r       : 2000,
-					t0      : 0,
+					t0      : time.timestamp + 1,
 					t1      : 100000,
 					dev     : 0
 				}
@@ -35,6 +43,58 @@ class GetData {
 			json: true
 		};
 		try {
+			const response = await request(options);
+			if(response.series.length > 0) {
+				response.series.map(r => {
+					r["new_value"] = 1
+				});
+				const data = await DataService.insert(response.series);
+			} else {
+				console.log('No data to insert')
+			}
+		} catch (e) {
+			console.log(e)
+		}
+	}
+
+	async getData(req, res) {
+		const time = await DataService.getLast();
+		const options = {
+			method: 'POST',
+			uri: 'https://iot.ufsc.br/api/get.php',
+			cert: fs.readFileSync(caFile),
+			key: fs.readFileSync(keyFile),
+			headers: {
+				'content-type': 'application/json'
+			},
+			body: {
+				series : {
+					version : 1.1,
+					unit    : 2224179500,
+					x       : 305,
+					y       : 305,
+					z       : 0,
+					r       : 2000,
+					t0      : time.timestamp,
+					t1      : 100000,
+					dev     : 0
+				}
+			},
+			json: true
+		};
+		try {
+			if(response.series.length > 0) {
+				response.series.map(r => {
+					r["new_value"] = 1
+				});
+				const data = await DataService.insert(response.series);
+				return Handlers.onSuccess(res, data)
+			} else {
+				return Handlers.onSuccess(res, {
+					message: 'No data to insert'
+				})
+			}
+
 			const response = await request(options);
 			response.series.map(r => {
 				r["new_value"] = 1
