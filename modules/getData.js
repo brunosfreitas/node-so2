@@ -7,21 +7,22 @@ const request = require('request-promise');
 const Handlers = require('../api/responses/handlers').default;
 const DataService = require('./dataService').default;
 const cron = require('node-cron');
+const Algorithms = require('../math/algorithms').default;
 
 class GetData {
 
 	constructor() {
-		cron.schedule('15 * * * * *', () => {
+		cron.schedule('5 * * * * *', () => {
 			let promise = this.cronGetData();
 			console.log("cron rodando")
 		})
 	}
 
 	async cronGetData() {
-		const time = await DataService.getLast();
+		const last_time_data = await DataService.getLast();
 		const options = {
 			method: 'POST',
-			uri: 'https://iot.ufsc.br/api/get.php',
+			uri: 'https://iot.lisha.ufsc.br/api/get.php',
 			cert: fs.readFileSync(caFile),
 			key: fs.readFileSync(keyFile),
 			headers: {
@@ -35,33 +36,44 @@ class GetData {
 					y       : 305,
 					z       : 0,
 					r       : 2000,
-					t0      : time.timestamp + 1,
-					t1      : 100000,
+					t0      : last_time_data.timestamp +1,
+					t1      : 10000000,
 					dev     : 0
 				}
 			},
 			json: true
 		};
+
 		try {
 			const response = await request(options);
+			console.log(response);
+
 			if(response.series.length > 0) {
+				console.log('New data - t0: ' + last_time_data.timestamp);
 				response.series.map(r => {
-					r["new_value"] = 1
+					// For each of the new series, calculate expected value by algorithm
+					let algorithms_vars = Algorithms.calculateApprovalByNonLinearRegression(r.value , 2 ,3);
+
+					console.log(algorithms_vars);
+					r.new_value = algorithms_vars.expected_pluv;
+					r.approval = algorithms_vars.approval;
+					r.error = algorithms_vars.error;
+
+					console.log(r);
 				});
-				const data = await DataService.insert(response.series);
+				// const data = await DataService.insert(response.series);
 			} else {
-				console.log('No data to insert')
+				console.log('No data to insert - t0: ' + last_time_data.timestamp)
 			}
 		} catch (e) {
 			console.log(e)
 		}
 	}
 
-	async getData(req, res) {
-		const time = await DataService.getLast();
+	async getAllData(req, res) {
 		const options = {
 			method: 'POST',
-			uri: 'https://iot.ufsc.br/api/get.php',
+			uri: 'https://iot.lisha.ufsc.br/api/get.php',
 			cert: fs.readFileSync(caFile),
 			key: fs.readFileSync(keyFile),
 			headers: {
@@ -75,8 +87,8 @@ class GetData {
 					y       : 305,
 					z       : 0,
 					r       : 2000,
-					t0      : time.timestamp,
-					t1      : 100000,
+					t0      : 0,
+					t1      : 100000000,
 					dev     : 0
 				}
 			},
@@ -94,13 +106,7 @@ class GetData {
 					message: 'No data to insert'
 				})
 			}
-
-			const response = await request(options);
-			response.series.map(r => {
-				r["new_value"] = 1
-			});
-			const data = await DataService.insert(response.series);
-			return Handlers.onSuccess(res, data)
+			
 		} catch (e) {
 			return Handlers.onError(res, 'Fail to get data', e)
 		}

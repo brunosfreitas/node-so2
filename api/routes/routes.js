@@ -12,7 +12,7 @@ class Routes {
 			})
 		});
 
-		app.route('/getData').get(GetData.getData);
+		app.route('/getData').get(GetData.getAllData);
 		app.route('/putData').get(GetData.putData);
 		app.route('/attachData').get(GetData.attach);
 
