@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "start": "NODE_ENV=development ./node_modules/pm2/bin/pm2 start ./server.js",
+    "prod": "NODE_ENV=production ./node_modules/pm2/bin/pm2 start ./server.js",
     "monit": "./node_modules/pm2/bin/pm2 monit",
     "stop": "./node_modules/pm2/bin/pm2 stop 0",
     "list": "./node_modules/pm2/bin/pm2 list"

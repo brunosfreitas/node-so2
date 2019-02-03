@@ -23,8 +23,6 @@ class GetData {
 		var obj_query = await DataService.getLast();		
 		last_time_data = obj_query ? parseInt(obj_query.timestamp) + 1  : 0 ;
 
-		// console.log(obj_query, last_time_data);
-
 		if(last_time_data == 0)
 			console.log('Banco vazio, buscando todos os dados');
 
