@@ -5,7 +5,7 @@ class Algorithms {
     constructor() {         
     }
     
-    calculateApprovalByNonLinearRegression(value, turbidy, level) {
+    calculateApprovalByNonLinearRegression(pluv, turbidy, level) {
         const { a, b, c, m, w, tolerance } = {
             a: 0.08112,
             b: -0.001477,
