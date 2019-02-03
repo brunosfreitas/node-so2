@@ -20,7 +20,7 @@ class DataService {
 	}
 
 	getLast() {
-		return db.one({
+		return db.oneOrNone({
 			name: 'get-last',
 			text: `select timestamp from data order by timestamp desc limit 1`,
 			values: [],

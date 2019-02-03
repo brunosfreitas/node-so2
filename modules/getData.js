@@ -12,14 +12,22 @@ const Algorithms = require('../math/algorithms').default;
 class GetData {
 
 	constructor() {
-		cron.schedule('5 * * * * *', () => {
+		cron.schedule('30 * * * * *', () => {
 			let promise = this.cronGetData();
 			console.log("cron rodando")
 		})
 	}
 
 	async cronGetData() {
-		const last_time_data = await DataService.getLast();
+		let last_time_data;
+		var obj_query = await DataService.getLast();		
+		last_time_data = obj_query ? parseInt(obj_query.timestamp) + 1  : 0 ;
+
+		// console.log(obj_query, last_time_data);
+
+		if(last_time_data == 0)
+			console.log('Banco vazio, buscando todos os dados');
+
 		const options = {
 			method: 'POST',
 			uri: 'https://iot.lisha.ufsc.br/api/get.php',
@@ -36,7 +44,7 @@ class GetData {
 					y       : 305,
 					z       : 0,
 					r       : 2000,
-					t0      : last_time_data.timestamp +1,
+					t0      : last_time_data,
 					t1      : 10000000,
 					dev     : 0
 				}
@@ -45,25 +53,24 @@ class GetData {
 		};
 
 		try {
-			const response = await request(options);
-			console.log(response);
+			const response = await request(options);			
 
 			if(response.series.length > 0) {
-				console.log('New data - t0: ' + last_time_data.timestamp);
+				console.log('New data - t0: ' + last_time_data);
 				response.series.map(r => {
 					// For each of the new series, calculate expected value by algorithm
 					let algorithms_vars = Algorithms.calculateApprovalByNonLinearRegression(r.value , 2 ,3);
 
-					console.log(algorithms_vars);
+					console.log('Series: value - ' + r.value + ' timestamp - ' + r.timestamp );
 					r.new_value = algorithms_vars.expected_pluv;
 					r.approval = algorithms_vars.approval;
 					r.error = algorithms_vars.error;
 
-					console.log(r);
+					// console.log(r);
 				});
-				// const data = await DataService.insert(response.series);
+				const data = await DataService.insert(response.series);
 			} else {
-				console.log('No data to insert - t0: ' + last_time_data.timestamp)
+				console.log('No data to insert - t0: ' + last_time_data)
 			}
 		} catch (e) {
 			console.log(e)

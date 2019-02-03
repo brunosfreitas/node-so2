@@ -18,7 +18,7 @@ class Algorithms {
         const expected_pluv = a + b*Math.sin(m*Math.PI*turbidy) + c*Math.exp(-(Math.pow((w*level), 2)));
 
         const return_array = {
-            expected_pluv,
+            expected_pluv: expected_pluv,
             pluv: pluv,
             error: pluv - expected_pluv,
             approval: (pluv - expected_pluv < tolerance)? 1 : 0
