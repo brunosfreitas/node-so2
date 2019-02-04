@@ -25,5 +25,5 @@ package-lock.json
 dist/
 server/
 
-modules/certificates
-python_scripts
+modules/certificates/
+python_scripts/
