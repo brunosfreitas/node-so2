@@ -27,4 +27,4 @@ server/
 
 modules/certificates/
 python_scripts/
-config/env/
+config/env/production.env.js
