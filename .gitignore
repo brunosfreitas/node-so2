@@ -20,7 +20,6 @@ yarn-error.log
 .eslintrc
 
 #dev config
-config/env/development.env.js
 .eslintrc.json
 package-lock.json
 dist/
